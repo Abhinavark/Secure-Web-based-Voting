@@ -3,7 +3,11 @@ from src.database.models import db
 
 def create_app():
     app = Flask(__name__)
+    # ... inside create_app() function ...
     
+    from src.backend.routes import voting_api
+    app.register_blueprint(voting_api)
+
     # Configure the database (using SQLite for local development)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///evoting.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

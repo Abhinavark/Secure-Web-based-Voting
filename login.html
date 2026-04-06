@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure E-Voting | Authentication</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Voter Authentication</h2>
+        <p>Please enter your credentials to access the secure voting booth.</p>
+        
+        <form id="loginForm">
+            <input type="text" id="voterId" placeholder="Enter Voter ID" required>
+            <input type="password" id="password" placeholder="Enter Password" required>
+            <button type="submit">Verify Identity</button>
+        </form>
+        <p id="statusMessage"></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent page reload
+            
+            const voterId = document.getElementById('voterId').value;
+            const password = document.getElementById('password').value;
+            const statusMessage = document.getElementById('statusMessage');
+
+            try {
+                // Send the credentials to the Python backend we wrote earlier
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identity_hash: voterId, password: password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusMessage.className = 'success';
+                    statusMessage.innerText = "Authentication successful. Redirecting...";
+                    // Redirect to the voting booth
+                    setTimeout(() => window.location.href = '/vote', 1500);
+                } else {
+                    statusMessage.className = 'error';
+                    statusMessage.innerText = result.error;
+                }
+            } catch (error) {
+                statusMessage.className = 'error';
+                statusMessage.innerText = "Connection to secure server failed.";
+            }
+        });
+    </script>
+</body>
+</html>

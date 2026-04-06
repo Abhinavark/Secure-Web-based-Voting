@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure E-Voting | Voting Booth</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Official Ballot</h2>
+        <p>Your vote will be cryptographically encrypted before submission.</p>
+        
+        <form id="voteForm">
+            <select id="candidateSelect" required>
+                <option value="" disabled selected>Select a Candidate...</option>
+                <option value="candidate_a">Candidate A (Cybersecurity Party)</option>
+                <option value="candidate_b">Candidate B (Data Privacy Party)</option>
+                <option value="candidate_c">Candidate C (Open Source Coalition)</option>
+            </select>
+            <button type="submit">Encrypt & Cast Vote</button>
+        </form>
+        <p id="statusMessage"></p>
+    </div>
+
+    <script>
+        document.getElementById('voteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const candidate = document.getElementById('candidateSelect').value;
+            const statusMessage = document.getElementById('statusMessage');
+            const submitButton = document.querySelector('button');
+
+            // Disable button to prevent double-clicking
+            submitButton.disabled = true;
+            statusMessage.style.color = '#3498db';
+            statusMessage.innerText = "Encrypting and transmitting securely...";
+
+            try {
+                // Send the vote to our backend ledger
+                const response = await fetch('/api/cast_vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vote: candidate })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusMessage.className = 'success';
+                    statusMessage.innerText = "Success! Your vote has been recorded on the secure ledger.";
+                    // Remove the form so they can't try to vote again visually
+                    document.getElementById('voteForm').style.display = 'none';
+                } else {
+                    statusMessage.className = 'error';
+                    statusMessage.innerText = result.error;
+                    submitButton.disabled = false;
+                }
+            } catch (error) {
+                statusMessage.className = 'error';
+                statusMessage.innerText = "Transmission failed. Please try again.";
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
